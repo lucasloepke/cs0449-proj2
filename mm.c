@@ -132,14 +132,9 @@ size_t heap_size();
  */
 Block_t *first_block()
 {
-    Block_t *first = NULL;
-    // This code is here to help you debug next_block(), delete this once you do
-    #warning This is a reminder, stop using the fake heap once you implement malloc!
-    {
-        first = (Block_t *)fake_heap;
-    }
-    // How can we do this using the functions in "memlib.h/c"?
-    return first;
+    if (heap_size() == 0)
+        return NULL;
+    return (Block_t *) mem_heap_lo();
 }
 
 /**
@@ -148,9 +143,13 @@ Block_t *first_block()
  */
 Block_t *next_block(Block_t *block)
 {
-    Block_t *next = NULL;
-    // Are you sure it exists?
-    return next;
+    Block_t *test = block->freeNode.nextFree;
+    Block_t *next = (Block_t *)UNSCALED_POINTER_ADD(block, block->info.size);
+    if (test == next || block->freeNode.nextFree == NULL) {
+        return NULL;
+    } else {
+        return next;
+    }
 }
 
 /* This function will have the OS allocate more space for our heap.
@@ -163,7 +162,10 @@ void *request_more_space(size_t request_size)
     // Look into the functions in "memlib.h/c" and request an increase of the heap size
     void *ret = NULL; // Should point at the new heap space! So we can initialize it
 
-    if (ret == NULL) // OR whatever type of error you can detect! (hint: it's not null :)
+    // memlib.h/c
+    ret = mem_sbrk(request_size);
+
+    if (ret == NULL || ret == (void*) -1) // OR whatever type of error you can detect! (hint: it's not null :)
     {
         // Let the program crash if you run out of memory!
         printf("ERROR: failed to request_more_space\n");
@@ -175,14 +177,9 @@ void *request_more_space(size_t request_size)
 /* Returns the size of the heap */
 size_t heap_size()
 {
-    size_t size=0;
-    // Delete this warning once you don't need the fake heap anymore
-    #warning This is a reminder, stop using the fake heap once you implement malloc!
-    {
-        size = sizeof(fake_heap);
-    }
-    // How can we obtain this using the functions in "memlib.h/c"?
-    return size;
+    //printf("Heap size: %ld\n", size);
+    return mem_heapsize();
+    
 }
 
 /************************************************************************
@@ -255,16 +252,11 @@ int mm_init()
 {
     // Modify this function only if you add variables that need to be initialized.
     // This will be called ONCE at the beginning of execution
+    mem_init();
     malloc_info.free_list_head = NULL;
     malloc_info.malloc_list_tail = NULL;
 
-    // This is here to help you implement next_block(). Delete this once you do!
-    #warning This is a reminder, delete this block once you start implementing malloc!
-    {
-        // This function prints the heap
-        examine_heap();
-        return -1;
-    }
+    //examine_heap();
 
     return 0;
 }
