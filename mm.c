@@ -240,7 +240,11 @@ Block_t *search_free_list(size_t request_size)
 
     // When you are ready, you can implement the free list.
     // YOUR CODE HERE!
-    //
+    while (ptr_free_block <= malloc_info.malloc_list_tail){
+        if(ptr_free_block->info.size <= check_size)
+            return ptr_free_block;
+        ptr_free_block = next_block(ptr_free_block);
+    }
 
     return NULL;
 }
@@ -256,7 +260,7 @@ int mm_init()
     malloc_info.free_list_head = NULL;
     malloc_info.malloc_list_tail = NULL;
 
-    //examine_heap();
+    examine_heap();
 
     return 0;
 }
